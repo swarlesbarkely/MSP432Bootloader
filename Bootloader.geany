@@ -28,10 +28,12 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=455;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fbootloader.c;0;4
-FILE_NAME_1=0;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
-FILE_NAME_2=0;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader_symtable.txt;0;4
+current_page=1
+FILE_NAME_0=7527;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fbootloader.c;0;4
+FILE_NAME_1=5607;C;0;EUTF-8;0;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
+FILE_NAME_2=1340;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FMSP432.ld;0;4
+FILE_NAME_3=9;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader.hex;0;4
+FILE_NAME_4=1299;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader_symtable.txt;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;*.s;

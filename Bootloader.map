@@ -17,7 +17,7 @@ LOAD /usr/bin/../lib/gcc/arm-none-eabi/5.3.1/armv7e-m/fpu/libgcc.a
 LOAD /usr/bin/../lib/gcc/arm-none-eabi/5.3.1/../../../../arm-none-eabi/lib/armv7e-m/fpu/libc.a
 END GROUP
                 0x0000000000000144                INTERRUPT_VECTOR_SIZE = 0x144
-                0x0000000000001000                BOOTLOADER_SIZE = 0x1000
+                0x0000000000000ebc                BOOTLOADER_SIZE = (0x1000 - INTERRUPT_VECTOR_SIZE)
                 0x0000000000000800                STACK_SIZE = 0x800
 TARGET(elf32-littlearm)
 
@@ -26,24 +26,34 @@ TARGET(elf32-littlearm)
  *(.interrupt_vectors)
  .interupt_vectors
                 0x0000000000000000      0x144 obj/Interrupts.o
-                0x0000000000000000                akpfnInterrupts
+                0x0000000000000000                akpfnInterruptVector
 
-.startup_code   0x0000000000000144        0x0
-                0x0000000000000144                STARTUP_CODE_START_ADDRESS = ABSOLUTE (.)
-                0x0000000000000145                STARTUP_CODE_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
+.bootloader     0x0000000000000144      0x43c
+                0x0000000000000144                BOOTLOADER_START_ADDRESS = ABSOLUTE (.)
+                0x0000000000000145                BOOTLOADER_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
+ *(.bootloader)
+ .bootloader    0x0000000000000144      0x43c obj/bootloader.o
+                0x0000000000000144                main
+                0x0000000000000580                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
+
+.startup_code   0x0000000000001000        0x0
+                0x0000000000001000                STARTUP_CODE_START_ADDRESS = ABSOLUTE (.)
+                0x0000000000001001                STARTUP_CODE_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
  *(.startup_code)
-                0x0000000000000144                STARTUP_CODE_END_ADDRESS = ABSOLUTE (.)
+                0x0000000000001000                STARTUP_CODE_END_ADDRESS = ABSOLUTE (.)
 
-.text           0x0000000000000144        0xc
+.text           0x0000000000001000       0x48
  *(.text)
- .text          0x0000000000000144        0x0 obj/bootloader.o
- .text          0x0000000000000144        0xc obj/Interrupts.o
+ .text          0x0000000000001000        0x0 obj/bootloader.o
+ .text          0x0000000000001000       0x48 obj/Interrupts.o
+                0x0000000000001004                InitISRs
+                0x000000000000102c                RegisterISR
  *(.text*)
  *(.rodata)
  *(.rodata*)
-                0x0000000000000150                SRAM_CODE_LOAD_ADDRESS = ABSOLUTE (.)
-                0x0000000000000150                . = (. + SIZEOF (.sram_code))
-                0x0000000000000150                SRAM_DATA_LOAD_ADDRESS = ABSOLUTE (.)
+                0x0000000000001048                SRAM_CODE_LOAD_ADDRESS = ABSOLUTE (.)
+                0x0000000000001048                . = (. + SIZEOF (.sram_code))
+                0x0000000000001048                SRAM_DATA_LOAD_ADDRESS = ABSOLUTE (.)
 
 .glue_7         0x0000000000000000        0x0
  .glue_7        0x0000000000000000        0x0 linker stubs
@@ -60,19 +70,11 @@ TARGET(elf32-littlearm)
 .iplt           0x0000000000000000        0x0
  .iplt          0x0000000000000000        0x0 obj/bootloader.o
 
-.bootloader     0x000000000003f000      0x430
-                0x000000000003f000                BOOTLOADER_START_ADDRESS = ABSOLUTE (.)
-                0x000000000003f001                BOOTLOADER_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
- *(.bootloader)
- .bootloader    0x000000000003f000      0x430 obj/bootloader.o
-                0x000000000003f000                main
-                0x000000000003f430                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
-                0x000000000003f430                . = ALIGN (0x4)
-
 .rel.dyn        0x0000000000000000        0x0
  .rel.iplt      0x0000000000000000        0x0 obj/bootloader.o
+ .rel.got       0x0000000000000000        0x0 obj/bootloader.o
 
-.sram_code      0x0000000001000000        0x0 load address 0x0000000000000150
+.sram_code      0x0000000001000000        0x0 load address 0x0000000000001048
                 0x0000000001000000                SRAM_CODE_START = ABSOLUTE (.)
  *(.sram_code)
                 0x0000000001000000                SRAM_CODE_END = ABSOLUTE (.)
@@ -83,23 +85,35 @@ TARGET(elf32-littlearm)
  *fill*         0x0000000020000000      0x7ff 
                 0x00000000200007ff                STACK_BEGIN = ABSOLUTE (.)
 
-.data           0x0000000020000800        0x0 load address 0x0000000000000150
-                0x0000000020000800                SRAM_DATA_START = ABSOLUTE (.)
- *(.data)
- .data          0x0000000020000800        0x0 obj/bootloader.o
- .data          0x0000000020000800        0x0 obj/Interrupts.o
-                0x0000000020000800                SRAM_DATA_END = ABSOLUTE (.)
+.isr_pointers   0x0000000020000800       0xc8
+ *(.isr_pointers)
+ .isr_pointers  0x0000000020000800       0xc8 obj/Interrupts.o
+                0x0000000020000800                apfnISRs
 
-.igot.plt       0x0000000020000800        0x0 load address 0x0000000000000150
+.data           0x00000000200007ff        0x0 load address 0x0000000000001048
+                0x00000000200007ff                SRAM_DATA_START = ABSOLUTE (.)
+ *(.data)
+ .data          0x00000000200007ff        0x0 obj/bootloader.o
+ .data          0x00000000200007ff        0x0 obj/Interrupts.o
+                0x00000000200007ff                SRAM_DATA_END = ABSOLUTE (.)
+
+.igot.plt       0x0000000020000800        0x0 load address 0x0000000000001048
  .igot.plt      0x0000000020000800        0x0 obj/bootloader.o
 
-.bss            0x0000000020000800        0x2 load address 0x0000000000000150
-                0x0000000020000800                ZERO_INIT_BEGIN = ABSOLUTE (.)
+.got            0x0000000020000800        0x4 load address 0x000000000000104c
+ .got           0x0000000020000800        0x4 obj/bootloader.o
+
+.got.plt        0x0000000020000804        0xc load address 0x0000000000001050
+ .got.plt       0x0000000020000804        0xc obj/bootloader.o
+                0x0000000020000804                _GLOBAL_OFFSET_TABLE_
+
+.bss            0x0000000020000810        0x2 load address 0x000000000000105c
+                0x0000000020000810                ZERO_INIT_BEGIN = ABSOLUTE (.)
  *(.bss)
- .bss           0x0000000020000800        0x2 obj/bootloader.o
- .bss           0x0000000020000802        0x0 obj/Interrupts.o
+ .bss           0x0000000020000810        0x2 obj/bootloader.o
+ .bss           0x0000000020000812        0x0 obj/Interrupts.o
  *(COMMON)
-                0x0000000020000802                ZERO_INIT_END = ABSOLUTE (.)
+                0x0000000020000812                ZERO_INIT_END = ABSOLUTE (.)
 OUTPUT(Bootloader.out elf32-littlearm)
 
 .comment        0x0000000000000000       0x6e

@@ -22,7 +22,7 @@ ASSEMBLY_PATH = asm
 
 CFLAGS = -Wall -Werror -I $(SHARED_FILES_PATH) -I $(CMSIS_PATH) -O3 -march=armv7e-m -mtune=cortex-m4 -mthumb -nostartfiles \
 		  -T$(LINKER_SCRIPT) $(PASS_TO_LINKER) -Map=$(PROJECT).map --save-temps -mfloat-abi=hard -mfpu=fpv4-sp-d16 \
-		  -I $(DRIVERLIB_PATH) -D __MSP432P401R__ -D TARGET_IS_MSP432P4XX -fpic	# These are needed specifically for bootloader
+		  -I $(DRIVERLIB_PATH) -D __MSP432P401R__ -D TARGET_IS_MSP432P4XX -fpic 	# These are needed specifically for bootloader
 
 LINT_FLAGS = --enable=all --inline-suppr -I $(CMSIS_PATH) -I $(SHARED_FILES_PATH) -I $(GCC_INCLUDES) \
 				-D __GNUC__ --suppress=variableScope -D __MSP432P401R__ \

@@ -7,6 +7,7 @@
 * Author:       Zack Day
 *
 * Changelog:    01/01/2016 Zack Day | Initial revision
+* 				06/04/2016 Zack Day | Use driverlib function for mass erase
 *
 * TODOs:        * Add check for valid application code
 *
@@ -30,7 +31,7 @@
 #define CODE_INDEX              4           /* : + Count + 2 Address */
 #define DATA_START_INDEX        5           /* : + Count + 2 Address + Code */
 
-#define FLASH_PROG_BUSY         (FLCTL_ERASE_CTLSTAT &= (BIT(16) | BIT(17)) != (BIT(16) | BIT(17)))
+#define FLASH_PROG_BUSY          (FLCTL_PRG_CTLSTAT & (BIT(16) | BIT(17)))
 
 #define LINE_FEED	0x0A
 
@@ -57,7 +58,6 @@ static uint16 scu16BaseAddress;
 static inline void CopyBootloaderToRAM (void);
 static uint8 AsciiToHex (uint8 const ku8Char);
 static void ProcessBuffer (uint8 * pau8Buffer, uint8 const ku8NumberOfBytes);
-static void MassFlashErase (void);
 static void FlashProgram (uint32 const ku32StartAddress, uint8 const * pkau8Data, uint8 u8NumberOfBytes);
 static inline void JumpToAppStartup (void);
 static inline void GoToErrorState (void);
@@ -98,16 +98,16 @@ __attribute__((section(".bootloader"))) int main (void)
         {
             /* Programming Bootloader --> Need to move it to RAM */
             CopyBootloaderToRAM ();
-            ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
+            ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
         }
         else
         {
-            ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0x7FFFFFFF);   // Leave 4k for Bootloader
+            ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFE);   // Leave 4k for Bootloader
         }
 
-        ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
+        ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
 
-		MassFlashErase ();
+		FlashInternal_performMassErase (TRUE);
 
         /* Setup clock */
         /* Want 12 MHz DCO Freq */
@@ -207,6 +207,7 @@ __attribute__((section(".bootloader"))) static inline void CopyBootloaderToRAM (
     "ExecutingInRAM:\n"
         );
 }
+
 /**************************************************************************
 * Description:	Converts ASCII character to hex value
 *
@@ -231,6 +232,7 @@ __attribute__((section(".bootloader"))) static uint8 AsciiToHex (uint8 const ku8
 
 	return u8Return;
 }
+
 /**************************************************************************
 * Description:  Processes input buffer from UART
 *
@@ -298,23 +300,6 @@ __attribute__((section(".bootloader"))) static void ProcessBuffer (uint8 * pau8B
 }
 
 /**************************************************************************
-* Description:  Erases unprotected flash sectors
-*
-* Inputs:       None
-*
-* Returns:      None
-*
-* History:      05/04/2016 ZMD Initial revision
-**************************************************************************/
-__attribute__((section(".bootloader"))) static void MassFlashErase (void)
-{
-	FLCTL_ERASE_CTLSTAT |= BIT(1) | BIT(19);	// Enable mass erase, clear status
-	FLCTL_ERASE_CTLSTAT |= BIT(0);				// Start mass erase -- protected sectors are automatically excluded
-
-	while (FLASH_PROG_BUSY);
-}
-
-/**************************************************************************
 * Description:  Writes data to flash
 *
 * Inputs:       ku32StartAddress -- Start address of programming
@@ -329,8 +314,6 @@ __attribute__((section(".bootloader"))) static void FlashProgram (uint32 const k
 {
     uint8 * pu8Destination = (uint8 *) ku32StartAddress;
     uint8 u8BitsWritten = 0;
-
-    while (FLASH_PROG_BUSY);    /* Wait for operations to finish if we have to */
 
     /* Initial byte accesses until we get on 32-bit (4 bytes) boundary */
     ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
@@ -413,16 +396,12 @@ __attribute__((section(".bootloader"))) static inline void JumpToAppStartup (voi
 * Returns:      Doesn't
 *
 * History:      01/22/2016 ZMD Initial revision
+*               06/02/2016 ZMD Added attempt to write interrupt vectors
 **************************************************************************/
 __attribute__((section(".bootloader"), always_inline, noreturn)) static inline void GoToErrorState (void)
 {
-	/* Try to write stack pointer and bootloader jump address to */
-	/* interrupt vector so we can hopefully get back to the bootloader */
-	ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
-	* (uint32 *) 0 = (uint32) &STACK_BEGIN;
-	* (uint32 *) 4 = (uint32) &BOOTLOADER_JUMP_ADDRESS;
-
     P2DIR |= BIT(0);
+
     /* Wait for reset */
     while (1)
     {
