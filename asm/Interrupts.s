@@ -37,24 +37,30 @@ InitISRs:
 	@ args = 0, pretend = 0, frame = 0
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	ldr	r3, .L7
-	ldr	r2, .L7+4
-	ldr	r1, .L7+8
+	ldr	r3, .L7+4
+	ldr	r2, .L7+8
+	ldr	r0, .L7
 .LPIC8:
 	add	r3, pc
+	ldr	r1, [r3, r2]
+	ldr	r2, .L7+12
+	add	r3, r1, #-536870912
+	orr	r3, r3, #536870912
 .LPIC9:
-	add	r1, pc
-	ldr	r2, [r3, r2]
-	subs	r3, r2, #4
-	adds	r2, r2, #196
+	add	r2, pc
+	str	r3, [r0]
+	orr	r2, r2, #1
+	subs	r3, r1, #4
+	adds	r1, r1, #224
 .L4:
-	str	r1, [r3, #4]!
-	cmp	r3, r2
+	str	r2, [r3, #4]!
+	cmp	r3, r1
 	bne	.L4
 	bx	lr
 .L8:
 	.align	2
 .L7:
+	.word	-536810232
 	.word	_GLOBAL_OFFSET_TABLE_-(.LPIC8+4)
 	.word	apfnISRs(GOT)
 	.word	DefaultISR-(.LPIC9+4)
@@ -69,12 +75,13 @@ RegisterISR:
 	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
 	ldr	r3, .L11
-	cmp	r0, #49
+	cmp	r0, #56
 .LPIC10:
 	add	r3, pc
 	bhi	.L9
 	ldr	r2, .L11+4
 	ldr	r3, [r3, r2]
+	orr	r1, r1, #1
 	str	r1, [r3, r0, lsl #2]
 .L9:
 	bx	lr
@@ -89,9 +96,9 @@ RegisterISR:
 	.section	.isr_pointers,"aw",%progbits
 	.align	2
 	.type	apfnISRs, %object
-	.size	apfnISRs, 200
+	.size	apfnISRs, 228
 apfnISRs:
-	.space	200
+	.space	228
 	.section	.interupt_vectors,"aw",%progbits
 	.align	2
 	.type	akpfnInterruptVector, %object
@@ -99,83 +106,5 @@ apfnISRs:
 akpfnInterruptVector:
 	.word	STACK_BEGIN
 	.word	BOOTLOADER_JUMP_ADDRESS
-	.word	apfnISRs
-	.word	apfnISRs+4
-	.word	apfnISRs+8
-	.word	apfnISRs+12
-	.word	apfnISRs+16
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	apfnISRs+20
-	.word	apfnISRs+24
-	.word	0
-	.word	apfnISRs+28
-	.word	apfnISRs+32
-	.word	apfnISRs+36
-	.word	apfnISRs+40
-	.word	apfnISRs+44
-	.word	apfnISRs+48
-	.word	apfnISRs+52
-	.word	apfnISRs+56
-	.word	apfnISRs+60
-	.word	apfnISRs+64
-	.word	apfnISRs+68
-	.word	apfnISRs+72
-	.word	apfnISRs+76
-	.word	apfnISRs+80
-	.word	apfnISRs+84
-	.word	apfnISRs+88
-	.word	apfnISRs+92
-	.word	apfnISRs+96
-	.word	apfnISRs+100
-	.word	apfnISRs+104
-	.word	apfnISRs+108
-	.word	apfnISRs+112
-	.word	apfnISRs+116
-	.word	apfnISRs+120
-	.word	apfnISRs+124
-	.word	apfnISRs+128
-	.word	apfnISRs+132
-	.word	apfnISRs+136
-	.word	apfnISRs+140
-	.word	apfnISRs+144
-	.word	apfnISRs+148
-	.word	apfnISRs+152
-	.word	apfnISRs+156
-	.word	apfnISRs+160
-	.word	apfnISRs+164
-	.word	apfnISRs+168
-	.word	apfnISRs+172
-	.word	apfnISRs+176
-	.word	apfnISRs+180
-	.word	apfnISRs+184
-	.word	apfnISRs+188
-	.word	apfnISRs+192
-	.word	apfnISRs+196
-	.word	apfnISRs+200
-	.word	apfnISRs+204
-	.word	apfnISRs+208
-	.word	apfnISRs+212
-	.word	apfnISRs+216
-	.word	apfnISRs+220
-	.word	apfnISRs+224
-	.word	apfnISRs+228
-	.word	apfnISRs+232
-	.word	apfnISRs+236
-	.word	apfnISRs+240
-	.word	apfnISRs+244
-	.word	apfnISRs+248
-	.word	apfnISRs+252
-	.word	apfnISRs+256
-	.word	apfnISRs+260
-	.word	apfnISRs+264
-	.word	apfnISRs+268
-	.word	apfnISRs+272
-	.word	apfnISRs+276
-	.word	apfnISRs+280
-	.word	apfnISRs+284
-	.word	apfnISRs+288
-	.word	apfnISRs+292
+	.space	316
 	.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.3.1 20160307 (release) [ARM/embedded-5-branch revision 234589]"
