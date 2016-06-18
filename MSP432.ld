@@ -85,20 +85,6 @@ SECTIONS
 
     }   > SRAM_DATA
 
-    .isr_pointers
-    ALIGN (2) :
-    {
-        *(.isr_pointers)
-    }
-
-    .data : AT (SRAM_DATA_LOAD_ADDRESS)
-    {
-        SRAM_DATA_START = ABSOLUTE(.);
-        *(.data)
-        SRAM_DATA_END = ABSOLUTE(.);
-
-    }   > SRAM_DATA
-
     .bss :
     {
         ZERO_INIT_BEGIN = ABSOLUTE(.);

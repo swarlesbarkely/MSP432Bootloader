@@ -8,6 +8,7 @@
 *
 * Changelog:    01/01/2016 Zack Day | Initial revision
 * 				06/04/2016 Zack Day | Use driverlib function for mass erase
+*               06/17/2016 Zack Day | Updated flash program routine
 *
 * TODOs:        * Add check for valid application code
 *
@@ -31,7 +32,7 @@
 #define CODE_INDEX              4           /* : + Count + 2 Address */
 #define DATA_START_INDEX        5           /* : + Count + 2 Address + Code */
 
-#define FLASH_PROG_BUSY          (FLCTL_PRG_CTLSTAT & (BIT(16) | BIT(17)))
+#define FLASH_PROG_BUSY          !(ROM_FlashCtl_getInterruptStatus() & BIT(3))/*(FLCTL_PRG_CTLSTAT & (BIT(16) | BIT(17)))*/
 
 #define LINE_FEED	0x0A
 
@@ -81,6 +82,8 @@ __attribute__((section(".bootloader"))) int main (void)
 	/* Stop the WDT */
     ROM_WDT_A_holdTimer ();
 
+    DisableInterrupts ();
+
 	/* Enable the LED on P1.0 */
     P1DIR |= BIT(0);
 
@@ -126,10 +129,11 @@ __attribute__((section(".bootloader"))) int main (void)
 
         /* Setup Flash programming */
         ROM_FlashCtl_setProgramVerification (FLASH_REGPRE | FLASH_REGPOST); /* Pre and Post verification */
+        ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
 
 		/* Send something to show we're listening */
 		UCA0TXBUF = '>';
-		while (!(UCA0IFG&UCTXIFG));
+		while (!(UCA0IFG & UCTXIFG));
 
         /* Wait for input */
         for (;;)
@@ -167,6 +171,8 @@ __attribute__((section(".bootloader"))) int main (void)
     P1OUT = 0;
 
     JumpToAppStartup ();
+
+    return 0;
 }
 
 /**************************************************************************
@@ -227,7 +233,7 @@ __attribute__((section(".bootloader"))) static uint8 AsciiToHex (uint8 const ku8
 	}
 	else if ((ku8Char <= 'F') && (ku8Char >= 'A'))
 	{
-		u8Return = ku8Char - 0x37;
+		u8Return = ku8Char - 'A' + 0xA;
 	}
 
 	return u8Return;
@@ -278,7 +284,7 @@ __attribute__((section(".bootloader"))) static void ProcessBuffer (uint8 * pau8B
 		}
 		else if (pau8Buffer [CODE_INDEX] == EXTENDED_LINEAR_ADDRESS)
 		{
-			scu16BaseAddress = (uint16) ((pau8Buffer [2] << 8) | pau8Buffer [3]);
+			scu16BaseAddress = (uint16) ((pau8Buffer [DATA_START_INDEX] << 8) | pau8Buffer [DATA_START_INDEX + 1]);
 		}
 		else if ((pau8Buffer [CODE_INDEX] == EOF) && !(FLCTL_IFG & 0x86))
 		{
@@ -313,47 +319,15 @@ __attribute__((section(".bootloader"))) static void ProcessBuffer (uint8 * pau8B
 __attribute__((section(".bootloader"))) static void FlashProgram (uint32 const ku32StartAddress, uint8 const * pkau8Data, uint8 u8NumberOfBytes)
 {
     uint8 * pu8Destination = (uint8 *) ku32StartAddress;
-    uint8 u8BitsWritten = 0;
 
-    /* Initial byte accesses until we get on 32-bit (4 bytes) boundary */
-    ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
-    while (((uint32) pu8Destination & 0x3) && u8NumberOfBytes)
-    {
-        * pu8Destination++ = * pkau8Data++;
-        --u8NumberOfBytes;
-    }
-
-    /* Now on 32-bit boundary */
-    ROM_FlashCtl_enableWordProgramming (FLASH_COLLATED_WRITE_MODE); /* Program Flash 128 bits at a time */
-    while (u8NumberOfBytes >= 4)
+	while (u8NumberOfBytes > 3)
     {
         * (uint32 *) pu8Destination = * (uint32 *) pkau8Data;
-        u8BitsWritten += 32;
+        u8NumberOfBytes -= 4;
         pu8Destination += 4;
         pkau8Data += 4;
-        u8NumberOfBytes -= 4;
-
-        if (u8BitsWritten >= 128)
-        {
-            u8BitsWritten = 0;
-            while (FLASH_PROG_BUSY);    /* Wait for operations to finish */
-        }
     }
 
-    /* Pad any program bits if needed */
-    if (u8BitsWritten)
-    {
-        while (u8BitsWritten < 128)
-        {
-            * (uint32 *) pu8Destination = 0xFFFFFFFF;
-            u8BitsWritten += 32;
-        }
-
-        while (FLASH_PROG_BUSY);    /* Wait for operations to finish */
-    }
-
-    /* Final byte accesses */
-    ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
     while (u8NumberOfBytes)
     {
         * pu8Destination++ = * pkau8Data++;

@@ -29,13 +29,13 @@ long_line_column=72
 
 [files]
 current_page=5
-FILE_NAME_0=3734;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fbootloader.c;0;4
-FILE_NAME_1=9570;C;0;EUTF-8;0;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
-FILE_NAME_2=836;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FMSP432.ld;0;4
-FILE_NAME_3=1323263;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FSharedFiles%2Fmsp432p401r.h;0;4
-FILE_NAME_4=774;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FSharedFiles%2FCommonMacros.h;0;4
-FILE_NAME_5=1046;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader_symtable.txt;0;4
-FILE_NAME_6=4999;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader.hex;0;4
+FILE_NAME_0=10589;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fbootloader.c;0;4
+FILE_NAME_1=486;C;0;EUTF-8;0;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
+FILE_NAME_2=1044;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FMSP432.ld;0;4
+FILE_NAME_3=768;Make;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fmakefile;0;4
+FILE_NAME_4=775;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader.hex;0;4
+FILE_NAME_5=1611;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FBootloader_symtable.txt;0;4
+FILE_NAME_6=6146;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fasm%2Fbootloader.s;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;*.s;

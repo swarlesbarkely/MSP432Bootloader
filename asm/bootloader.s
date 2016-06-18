@@ -22,20 +22,26 @@
 	.thumb_func
 	.type	main, %function
 main:
-	@ args = 0, pretend = 0, frame = 88
+	@ args = 0, pretend = 0, frame = 96
 	@ frame_needed = 0, uses_anonymous_args = 0
 	push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
-	ldr	r3, .L83
-	ldr	r4, .L83+68
+	ldr	r3, .L50
 	ldr	r3, [r3]
-	ldr	r6, .L83+4
+	sub	sp, sp, #100
 	ldr	r3, [r3]
-	sub	sp, sp, #92
 	blx	r3
-	ldr	r2, .L83+8
-	ldr	r1, .L83+12
+	.syntax unified
+@ 84 "bootloader.c" 1
+			cpsid i
+@ 0 "" 2
+	.thumb
+	.syntax unified
+	ldr	r2, .L50+4
+	ldr	r1, .L50+8
 	ldrb	r0, [r2]	@ zero_extendqisi2
-	ldr	r3, .L83+16
+	ldr	r3, .L50+12
+	ldr	r4, .L50+60
+	ldr	r6, .L50+16
 	orr	r0, r0, #1
 	strb	r0, [r2]
 	ldrb	r0, [r1]	@ zero_extendqisi2
@@ -55,7 +61,7 @@ main:
 	tst	r3, #18
 	bne	.L3
 	.syntax unified
-@ 183 "bootloader.c" 1
+@ 188 "bootloader.c" 1
 	
 @ See if we're in RAM already
    mov     r1, PC
@@ -84,17 +90,17 @@ ExecutingInRAM:
 @ 0 "" 2
 	.thumb
 	.syntax unified
-	ldr	r3, .L83+20
+	ldr	r3, .L50+20
 	ldr	r3, [r3]
 	mov	r1, #-1
 	ldr	r3, [r3, #16]
 	movs	r0, #1
 	blx	r3
 .L4:
-	ldr	r4, .L83+20
-	ldr	r6, .L83+24
+	ldr	r4, .L50+20
+	ldr	r6, .L50+24
 	ldr	r3, [r4]
-	ldr	r5, .L83+28
+	ldr	r5, .L50+28
 	ldr	r3, [r3, #16]
 	mov	r1, #-1
 	movs	r0, #2
@@ -103,76 +109,81 @@ ExecutingInRAM:
 	movs	r0, #1
 	ldr	r3, [r3, #32]
 	blx	r3
-	ldr	r3, .L83+32
+	ldr	r3, .L50+32
 	ldr	r0, [r4]
-	ldr	r2, .L83+36
-	ldr	r1, .L83+40
+	ldr	r1, .L50+36
+	ldr	r2, .L50+40
 	movw	r7, #26970
 	str	r7, [r3]
 	mov	r7, #196608
 	str	r7, [r6]
-	movs	r7, #0
 	movs	r6, #128
+	movs	r7, #0
 	str	r7, [r3]
 	strh	r6, [r5]	@ movhi
-	ldrb	r3, [r2]	@ zero_extendqisi2
+	ldrb	r3, [r1]	@ zero_extendqisi2
 	orr	r3, r3, #12
-	strb	r3, [r2]
-	ldrh	r3, [r1]
-	ldr	r2, [r0, #44]
-	add	r4, r4, #1040187392
-	addw	r4, r4, #2026
+	strb	r3, [r1]
+	ldrh	r3, [r2]
+	ldr	r1, [r0, #44]
 	uxth	r3, r3
 	orr	r3, r3, #33
-	movs	r5, #78
-	strh	r3, [r1]	@ movhi
+	movs	r6, #78
+	strh	r3, [r2]	@ movhi
 	movs	r0, #12
-	strh	r5, [r4]	@ movhi
-	blx	r2
-	ldr	r3, .L83+44
-	ldr	r1, .L83+48
+	strh	r6, [r5, #6]	@ movhi
+	blx	r1
+	ldr	r3, [r4]
+	movs	r0, #2
+	ldr	r3, [r3, #52]
+	blx	r3
+	ldr	r3, .L50+44
+	ldr	r1, .L50+48
 	movs	r2, #62
 	strh	r2, [r3]	@ movhi
 .L5:
 	ldrh	r3, [r1]
 	lsls	r2, r3, #30
 	bpl	.L5
-	ldr	r3, .L83+72
-	ldr	r8, .L83+76
-	ldr	r9, .L83+48
-	ldr	r7, .L83+52
+	ldr	r3, .L50+64
+	ldr	r10, .L50+68
+	ldr	r4, .L50+48
+	ldr	r9, .L50+72
+	ldr	r6, .L50+12
+	ldr	r8, .L50+76
 .LPIC17:
 	add	r3, pc
+	str	r3, [sp, #8]
+	add	r3, sp, #17
 .LPIC18:
-	add	r8, pc
-	str	r3, [sp, #4]
+	add	r10, pc
 	movs	r2, #0
-	add	r5, sp, #8
-	add	r6, sp, #13
+	add	r5, sp, #16
+	str	r3, [sp, #4]
+	add	r7, sp, #21
 .L6:
-	ldrh	r3, [r9]
+	ldrh	r3, [r4]
 	lsls	r3, r3, #31
 	bpl	.L6
-	ldr	r1, .L83+56
-	add	r3, sp, #88
+	add	r3, sp, #96
 	add	r3, r3, r2
-	ldrh	r0, [r1]
-	strb	r0, [r3, #-80]
-	ldrh	r1, [r1]
+	ldrh	r1, [r9]
+	strb	r1, [r3, #-80]
+	ldrh	r1, [r9]
 	uxth	r1, r1
 	adds	r3, r2, #1
 	cmp	r1, #10
 	uxtb	r3, r3
-	beq	.L76
+	beq	.L44
 	cmp	r3, #77
-	bhi	.L77
-.L35:
+	bhi	.L45
+.L26:
 	movs	r1, #0
 	mov	r2, r3
-	strh	r1, [r9]	@ movhi
+	strh	r1, [r4]	@ movhi
 	b	.L6
 .L3:
-	ldr	r3, .L83+20
+	ldr	r3, .L50+20
 	ldr	r3, [r3]
 	mvn	r1, #1
 	ldr	r3, [r3, #16]
@@ -184,7 +195,7 @@ ExecutingInRAM:
 	strb	r0, [r2]
 	strb	r0, [r3]
 	.syntax unified
-@ 382 "bootloader.c" 1
+@ 355 "bootloader.c" 1
 	
 @ Reset stack and jump to startup code address
    ldr     SP, =STACK_BEGIN
@@ -193,10 +204,10 @@ ExecutingInRAM:
 @ 0 "" 2
 	.thumb
 	.syntax unified
-	add	sp, sp, #92
+	add	sp, sp, #100
 	@ sp needed
 	pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
-.L76:
+.L44:
 	subs	r2, r2, #1
 	uxtb	r1, r2
 	cmp	r1, #1
@@ -205,7 +216,7 @@ ExecutingInRAM:
 	bls	.L13
 .L12:
 	adds	r3, r5, r0
-	lsrs	r4, r0, #1
+	lsr	ip, r0, #1
 	ldrb	r2, [r3, #-1]	@ zero_extendqisi2
 	sub	r3, r2, #48
 	uxtb	r3, r3
@@ -223,10 +234,10 @@ ExecutingInRAM:
 	uxtb	r2, r2
 	lsls	r3, r3, #4
 	cmp	r2, #9
-	sub	ip, lr, #65
+	sub	fp, lr, #65
 	sxtb	r3, r3
 	bls	.L11
-	cmp	ip, #5
+	cmp	fp, #5
 	sub	r2, lr, #55
 	ite	ls
 	uxtbls	r2, r2
@@ -235,125 +246,75 @@ ExecutingInRAM:
 	adds	r0, r0, #2
 	orrs	r3, r3, r2
 	cmp	r0, r1
-	strb	r3, [r5, r4]
+	strb	r3, [r5, ip]
 	bls	.L12
 .L13:
-	ldrb	r4, [sp, #9]	@ zero_extendqisi2
-	adds	r0, r4, #4
-	add	r0, r0, r5
-	adds	r2, r4, #5
-	mov	r1, r5
-	movs	r3, #0
+	ldrb	r3, [sp, #17]	@ zero_extendqisi2
+	add	lr, r3, #4
+	add	lr, lr, r5
+	adds	r1, r3, #5
+	mov	r0, r5
+	movs	r2, #0
 .L9:
-	ldrb	lr, [r1, #1]!	@ zero_extendqisi2
-	cmp	r1, r0
-	add	r3, r3, lr
+	ldrb	ip, [r0, #1]!	@ zero_extendqisi2
+	cmp	lr, r0
+	add	r2, r2, ip
 	bne	.L9
-	add	r1, sp, #88
-	add	r2, r2, r1
-	negs	r3, r3
-	ldrb	r2, [r2, #-80]	@ zero_extendqisi2
-	uxtb	r3, r3
-	cmp	r2, r3
-	beq	.L78
-	ldr	r3, .L83+44
-	ldr	r1, .L83+60
-	ldr	r2, .L83+64
+	add	r0, sp, #96
+	add	r1, r1, r0
+	negs	r2, r2
+	ldrb	r1, [r1, #-80]	@ zero_extendqisi2
+	uxtb	r2, r2
+	cmp	r1, r2
+	beq	.L46
+	ldr	r3, .L50+44
+	ldr	r1, .L50+52
+	ldr	r2, .L50+56
 	movs	r0, #67
 	strh	r0, [r3]	@ movhi
 	ldrb	r3, [r1]	@ zero_extendqisi2
 	orr	r3, r3, #1
 	strb	r3, [r1]
-.L34:
+.L25:
 	ldrb	r3, [r2]	@ zero_extendqisi2
 	eor	r3, r3, #1
 	strb	r3, [r2]
-	b	.L34
-.L77:
-	ldr	r3, .L83+44
-	ldr	r1, .L83+60
-	ldr	r2, .L83+64
+	b	.L25
+.L45:
+	ldr	r3, .L50+44
+	ldr	r1, .L50+52
+	ldr	r2, .L50+56
 	movs	r0, #66
 	strh	r0, [r3]	@ movhi
 	ldrb	r3, [r1]	@ zero_extendqisi2
 	orr	r3, r3, #1
 	strb	r3, [r1]
-.L36:
+.L27:
 	ldrb	r3, [r2]	@ zero_extendqisi2
 	eor	r3, r3, #1
 	strb	r3, [r2]
-	b	.L36
-.L78:
-	ldrb	r0, [sp, #12]	@ zero_extendqisi2
-	cbz	r0, .L79
+	b	.L27
+.L46:
+	ldrb	r0, [sp, #20]	@ zero_extendqisi2
+	cbz	r0, .L47
 	cmp	r0, #4
-	beq	.L80
+	beq	.L48
 	cmp	r0, #1
-	beq	.L81
-.L33:
-	ldr	r2, .L83+16
-	ldrb	r3, [r2]	@ zero_extendqisi2
+	beq	.L49
+.L24:
+	ldrb	r3, [r6]	@ zero_extendqisi2
 	eor	r3, r3, #1
-	strb	r3, [r2]
+	strb	r3, [r6]
 	movs	r3, #0
-	b	.L35
-.L79:
-	ldr	r1, [sp, #4]
-	ldrb	r3, [sp, #10]	@ zero_extendqisi2
-	ldr	r2, .L83+20
-	ldrh	r1, [r1]
-	ldr	r2, [r2]
-	ldrb	fp, [sp, #11]	@ zero_extendqisi2
-	ldr	r2, [r2, #52]
-	lsls	r3, r3, #8
-	orr	r3, r3, r1, lsl #16
-	orr	fp, r3, fp
-	movs	r0, #2
-	blx	r2
-	tst	fp, #3
-	beq	.L41
-	cmp	r4, #0
-	beq	.L17
-	mov	r10, r6
-	b	.L18
-.L82:
-	cmp	r4, #0
-	beq	.L17
-.L18:
-	ldrb	r3, [r10], #1	@ zero_extendqisi2
-	strb	r3, [fp], #1
-	subs	r4, r4, #1
-	tst	fp, #3
-	uxtb	r4, r4
-	bne	.L82
-.L16:
-	ldr	r3, .L83+20
-	ldr	r3, [r3]
-	movs	r0, #1
-	ldr	r3, [r3, #52]
-	blx	r3
-	cmp	r4, #3
-	bls	.L20
-	mov	r1, fp
-	subs	r4, r4, #4
-	ldr	r3, [r10]
-	str	r3, [r1], #4
-	uxtb	r4, r4
-	lsrs	r2, r4, #2
-	adds	r3, r2, #1
-	add	fp, fp, r3, lsl #2
-	mov	r0, r1
-	mov	lr, r10
-	movs	r3, #32
-	b	.L38
-.L84:
+	b	.L26
+.L51:
 	.align	2
-.L83:
+.L50:
 	.word	33556580
-	.word	1073761280
 	.word	1073761284
 	.word	1073761286
 	.word	1073761282
+	.word	1073761280
 	.word	33556508
 	.word	1073808388
 	.word	1073745920
@@ -362,62 +323,94 @@ ExecutingInRAM:
 	.word	1073745928
 	.word	1073745934
 	.word	1073745948
-	.word	1073811536
-	.word	1073745932
 	.word	1073761285
 	.word	1073761283
 	.word	.LANCHOR0-(.LPIC16+4)
 	.word	.LANCHOR0-(.LPIC17+4)
 	.word	.LANCHOR0-(.LPIC18+4)
-.L23:
-	adds	r3, r3, #32
+	.word	1073745932
+	.word	1073811696
+.L47:
+	ldr	r1, [sp, #8]
+	ldrb	r2, [sp, #18]	@ zero_extendqisi2
+	ldrh	r0, [r1]
+	ldrb	r1, [sp, #19]	@ zero_extendqisi2
+	lsls	r2, r2, #8
+	orr	r2, r2, r0, lsl #16
+	cmp	r3, #3
+	orr	r1, r1, r2
+	bls	.L32
+	subs	r2, r3, #4
+	ubfx	r2, r2, #2, #6
+	add	lr, r1, r2, lsl #2
+	ldr	ip, [sp, #4]
+	add	lr, lr, #4
+	mov	r0, r1
+	mov	fp, r3
+.L17:
+	ldr	r3, [ip, #4]!
+	str	r3, [r0], #4
+	cmp	lr, r0
+	bne	.L17
+	adds	r2, r2, #1
+	lsls	r2, r2, #2
+	add	r1, r1, r2
+	and	r3, fp, #3
+	add	r2, r2, r7
+.L16:
+	cbz	r3, .L21
+	subs	r3, r3, #1
 	uxtb	r3, r3
-	ldr	ip, [lr, #4]!
-	str	ip, [r0], #4
-	tst	r3, #128
-	bne	.L57
-.L38:
-	cmp	r0, fp
-	bne	.L23
-	lsl	fp, r2, #2
-	sub	r4, r4, r2, lsl #2
-	add	r2, fp, #4
-	add	r10, r10, r2
-	add	fp, fp, r1
-	and	r4, r4, #255
+	adds	r3, r3, #1
+	add	r3, r3, r2
+	subs	r1, r1, #1
+.L20:
+	ldrb	r0, [r2], #1	@ zero_extendqisi2
+	strb	r0, [r1, #1]!
+	cmp	r3, r2
+	bne	.L20
+.L21:
+	ldr	r2, [r8]
+	movw	r3, #518
+	ands	r3, r3, r2
 	cmp	r3, #0
-	beq	.L20
-	mov	r2, #-1
-.L24:
-	lsls	r1, r3, #24
-	bmi	.L56
-	adds	r3, r3, #32
-	uxtb	r3, r3
-	str	r2, [fp]
-	b	.L24
-.L81:
-	ldr	r3, .L85
-	ldr	r4, [r3]
-	ands	r4, r4, #134
-	bne	.L33
-	ldr	r10, .L85+16
-	ldr	r3, [r10]
+	beq	.L24
+	ldr	r3, .L52
+	ldr	r1, .L52+4
+	ldr	r2, .L52+8
+	movs	r0, #70
+	strh	r0, [r3]	@ movhi
+	ldrb	r3, [r1]	@ zero_extendqisi2
+	orr	r3, r3, #1
+	strb	r3, [r1]
+.L22:
+	ldrb	r3, [r2]	@ zero_extendqisi2
+	eor	r3, r3, #1
+	strb	r3, [r2]
+	b	.L22
+.L49:
+	ldr	r3, [r8]
+	ands	fp, r3, #134
+	bne	.L24
+	ldr	r3, .L52+12
+	ldr	r2, [r3]
+	str	r3, [sp, #12]
+	ldr	r2, [r2, #20]
 	mov	r1, #-1
-	ldr	r3, [r3, #20]
-	blx	r3
-	ldr	r3, [r10]
+	blx	r2
+	ldr	r3, [sp, #12]
+	ldr	r3, [r3]
 	mov	r1, #-1
 	ldr	r3, [r3, #20]
 	movs	r0, #2
 	blx	r3
-	ldr	r1, .L85+4
-	ldr	r2, .L85+8
-	ldr	r3, .L85+12
-	strb	r4, [r1]
-	strb	r4, [r2]
-	strb	r4, [r3]
+	ldr	r2, .L52+16
+	ldr	r3, .L52+20
+	strb	fp, [r2]
+	strb	fp, [r3]
+	strb	fp, [r6]
 	.syntax unified
-@ 382 "bootloader.c" 1
+@ 355 "bootloader.c" 1
 	
 @ Reset stack and jump to startup code address
    ldr     SP, =STACK_BEGIN
@@ -426,87 +419,25 @@ ExecutingInRAM:
 @ 0 "" 2
 	.thumb
 	.syntax unified
-	b	.L33
-.L80:
-	ldrb	r2, [sp, #10]	@ zero_extendqisi2
-	ldrb	r3, [sp, #11]	@ zero_extendqisi2
+	b	.L24
+.L48:
+	ldrb	r2, [sp, #21]	@ zero_extendqisi2
+	ldrb	r3, [sp, #22]	@ zero_extendqisi2
 	orr	r3, r3, r2, lsl #8
-	strh	r3, [r8]	@ movhi
-	b	.L33
-.L57:
-	ldr	r3, [r7]
-	ands	r3, r3, #196608
-	beq	.L38
-	ldr	r3, [r7]
-	ands	r3, r3, #196608
-	bne	.L57
-	b	.L38
-.L56:
-	ldr	r3, [r7]
-	tst	r3, #196608
-	bne	.L56
-.L20:
-	ldr	r3, .L85+16
-	ldr	r3, [r3]
-	movs	r0, #2
-	ldr	r3, [r3, #52]
-	blx	r3
-	cbz	r4, .L28
-	ldrb	r3, [r10]	@ zero_extendqisi2
-	strb	r3, [fp]
-	cmp	r4, #1
-	beq	.L28
-	ldrb	r3, [r10, #1]	@ zero_extendqisi2
-	strb	r3, [fp, #1]
-	cmp	r4, #2
-	itt	ne
-	ldrbne	r3, [r10, #2]	@ zero_extendqisi2
-	strbne	r3, [fp, #2]
-.L28:
-	ldr	r3, .L85
-	ldr	r2, [r3]
-	movw	r3, #518
-	ands	r3, r3, r2
-	cmp	r3, #0
-	beq	.L33
-	ldr	r3, .L85+20
-	ldr	r1, .L85+24
-	ldr	r2, .L85+28
-	movs	r0, #70
-	strh	r0, [r3]	@ movhi
-	ldrb	r3, [r1]	@ zero_extendqisi2
-	orr	r3, r3, #1
-	strb	r3, [r1]
-.L31:
-	ldrb	r3, [r2]	@ zero_extendqisi2
-	eor	r3, r3, #1
-	strb	r3, [r2]
-	b	.L31
-.L17:
-	ldr	r4, .L85+16
-	ldr	r3, [r4]
-	movs	r0, #1
-	ldr	r3, [r3, #52]
-	blx	r3
-	ldr	r3, [r4]
-	movs	r0, #2
-	ldr	r3, [r3, #52]
-	blx	r3
-	b	.L28
-.L41:
-	mov	r10, r6
+	strh	r3, [r10]	@ movhi
+	b	.L24
+.L32:
+	mov	r2, r7
 	b	.L16
-.L86:
+.L53:
 	.align	2
-.L85:
-	.word	1073811696
-	.word	1073761286
-	.word	1073761284
-	.word	1073761282
-	.word	33556508
+.L52:
 	.word	1073745934
 	.word	1073761285
 	.word	1073761283
+	.word	33556508
+	.word	1073761286
+	.word	1073761284
 	.size	main, .-main
 	.bss
 	.align	1
