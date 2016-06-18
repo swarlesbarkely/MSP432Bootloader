@@ -32,8 +32,6 @@
 #define CODE_INDEX              4           /* : + Count + 2 Address */
 #define DATA_START_INDEX        5           /* : + Count + 2 Address + Code */
 
-#define FLASH_PROG_BUSY          !(ROM_FlashCtl_getInterruptStatus() & BIT(3))/*(FLCTL_PRG_CTLSTAT & (BIT(16) | BIT(17)))*/
-
 #define LINE_FEED	0x0A
 
 /* Hex record types */
@@ -315,6 +313,7 @@ __attribute__((section(".bootloader"))) static void ProcessBuffer (uint8 * pau8B
 * Returns:      None
 *
 * History:      01/22/2016 ZMD Initial revision
+*               06/17/2016 ZMD Use only immediate writes
 **************************************************************************/
 __attribute__((section(".bootloader"))) static void FlashProgram (uint32 const ku32StartAddress, uint8 const * pkau8Data, uint8 u8NumberOfBytes)
 {
@@ -371,6 +370,7 @@ __attribute__((section(".bootloader"))) static inline void JumpToAppStartup (voi
 *
 * History:      01/22/2016 ZMD Initial revision
 *               06/02/2016 ZMD Added attempt to write interrupt vectors
+*               06/17/2016 ZMD Removed attempt to write interrupt vectors -- they don't get erased anymore
 **************************************************************************/
 __attribute__((section(".bootloader"), always_inline, noreturn)) static inline void GoToErrorState (void)
 {

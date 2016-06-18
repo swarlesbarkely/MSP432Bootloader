@@ -31,7 +31,7 @@ main:
 	ldr	r3, [r3]
 	blx	r3
 	.syntax unified
-@ 84 "bootloader.c" 1
+@ 83 "bootloader.c" 1
 			cpsid i
 @ 0 "" 2
 	.thumb
@@ -61,7 +61,7 @@ main:
 	tst	r3, #18
 	bne	.L3
 	.syntax unified
-@ 188 "bootloader.c" 1
+@ 187 "bootloader.c" 1
 	
 @ See if we're in RAM already
    mov     r1, PC
