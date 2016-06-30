@@ -7,7 +7,7 @@
 * Author:       Zack Day
 *
 * Changelog:    01/01/2016 Zack Day | Initial revision
-* 				06/04/2016 Zack Day | Use driverlib function for mass erase
+*               06/04/2016 Zack Day | Use driverlib function for mass erase
 *               06/17/2016 Zack Day | Updated flash program routine
 *
 * TODOs:        * Add check for valid application code
@@ -18,6 +18,10 @@
 #include "msp432p401r.h"
 #include "types.h"
 #include "CommonMacros.h"
+
+/* Defining this will cause the bootloader to send a ':' after each line is processed */
+/* This is helpful for programming via a python script */
+#define _USE_PYTHON_PROGRAMMING_TOOL
 
 /* Configure these to control what pins will prepare bootloader for programming */
 #define LAUNCHPAD_BUTTON_1          (BIT(1))
@@ -32,7 +36,7 @@
 #define CODE_INDEX              4           /* : + Count + 2 Address */
 #define DATA_START_INDEX        5           /* : + Count + 2 Address + Code */
 
-#define LINE_FEED	0x0A
+#define LINE_FEED   0x0A
 
 /* Hex record types */
 enum
@@ -77,12 +81,12 @@ __attribute__((section(".bootloader"))) int main (void)
     uint8 u8BufferIndex = 0;
     uint8 au8SerialBuffer [BUFFER_SIZE];
 
-	/* Stop the WDT */
+    /* Stop the WDT */
     ROM_WDT_A_holdTimer ();
 
     DisableInterrupts ();
 
-	/* Enable the LED on P1.0 */
+    /* Enable the LED on P1.0 */
     P1DIR |= BIT(0);
 
     /* Setup buttons as input on Launchpad */
@@ -108,7 +112,7 @@ __attribute__((section(".bootloader"))) int main (void)
 
         ROM_FlashCtl_unprotectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
 
-		FlashInternal_performMassErase (TRUE);
+        FlashInternal_performMassErase (TRUE);
 
         /* Setup clock */
         /* Want 12 MHz DCO Freq */
@@ -129,9 +133,9 @@ __attribute__((section(".bootloader"))) int main (void)
         ROM_FlashCtl_setProgramVerification (FLASH_REGPRE | FLASH_REGPOST); /* Pre and Post verification */
         ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
 
-		/* Send something to show we're listening */
-		UCA0TXBUF = '>';
-		while (!(UCA0IFG & UCTXIFG));
+        /* Send something to show we're listening */
+        UCA0TXBUF = '>';
+        while (!(UCA0IFG & UCTXIFG));
 
         /* Wait for input */
         for (;;)
@@ -144,7 +148,13 @@ __attribute__((section(".bootloader"))) int main (void)
                 /* See if buffer is full or line is ending */
                 if (UCA0RXBUF == LINE_FEED)
                 {
-                    ProcessBuffer (au8SerialBuffer, u8BufferIndex - 2);	// Strip off CR-LF
+                    ProcessBuffer (au8SerialBuffer, u8BufferIndex - 2); // Strip off CR-LF
+
+                    #ifdef _USE_PYTHON_PROGRAMMING_TOOL
+                    /* Send something to show we processed the line */
+                    UCA0TXBUF = ':';
+                    while (!(UCA0IFG & UCTXIFG));
+                    #endif
 
                     /* Reset index */
                     u8BufferIndex = 0;
@@ -213,28 +223,28 @@ __attribute__((section(".bootloader"))) static inline void CopyBootloaderToRAM (
 }
 
 /**************************************************************************
-* Description:	Converts ASCII character to hex value
+* Description:  Converts ASCII character to hex value
 *
-* Inputs:		ASCII character (0-F)
+* Inputs:       ASCII character (0-F)
 *
-* Returns:		Hex value -- 0x0-0x0F
+* Returns:      Hex value -- 0x0-0x0F
 *
-* History:		05/08/2016 ZMD Initial revision
+* History:      05/08/2016 ZMD Initial revision
 **************************************************************************/
 __attribute__((section(".bootloader"))) static uint8 AsciiToHex (uint8 const ku8Char)
 {
-	uint8 u8Return = ku8Char;
+    uint8 u8Return = ku8Char;
 
-	if ((ku8Char <= '9') && (ku8Char >= '0'))
-	{
-		u8Return = ku8Char - '0';
-	}
-	else if ((ku8Char <= 'F') && (ku8Char >= 'A'))
-	{
-		u8Return = ku8Char - 'A' + 0xA;
-	}
+    if ((ku8Char <= '9') && (ku8Char >= '0'))
+    {
+        u8Return = ku8Char - '0';
+    }
+    else if ((ku8Char <= 'F') && (ku8Char >= 'A'))
+    {
+        u8Return = ku8Char - 'A' + 0xA;
+    }
 
-	return u8Return;
+    return u8Return;
 }
 
 /**************************************************************************
@@ -254,53 +264,53 @@ __attribute__((section(".bootloader"))) static void ProcessBuffer (uint8 * pau8B
     uint32 u32Sum = 0;
     uint32 u32StartAddress;
 
-	/* Convert ASCII values to hex values */
-	for (u32Index = 2; u32Index <= ku8NumberOfBytes; u32Index += 2)
-	{
-		pau8Buffer[u32Index >> 1] = (AsciiToHex (pau8Buffer[u32Index - 1]) << 4) |
-									 AsciiToHex (pau8Buffer[u32Index]);
-	}
+    /* Convert ASCII values to hex values */
+    for (u32Index = 2; u32Index <= ku8NumberOfBytes; u32Index += 2)
+    {
+        pau8Buffer[u32Index >> 1] = (AsciiToHex (pau8Buffer[u32Index - 1]) << 4) |
+                                     AsciiToHex (pau8Buffer[u32Index]);
+    }
 
-	u32DataByteCount = pau8Buffer [DATA_BYTE_COUNT_INDEX];
+    u32DataByteCount = pau8Buffer [DATA_BYTE_COUNT_INDEX];
 
-	/* Check the checksum */
-	for (u32Index = 1; u32Index < (u32DataByteCount + DATA_START_INDEX); ++u32Index)
-	{
-		u32Sum += pau8Buffer [u32Index];
-	}
+    /* Check the checksum */
+    for (u32Index = 1; u32Index < (u32DataByteCount + DATA_START_INDEX); ++u32Index)
+    {
+        u32Sum += pau8Buffer [u32Index];
+    }
 
-	if ((uint8)(~u32Sum + 1) == pau8Buffer [u32DataByteCount + DATA_START_INDEX])
-	{
-		/* Checksum is ok --> check the code */
-		if (pau8Buffer [CODE_INDEX] == DATA)
-		{
-			u32StartAddress = (uint32) ((scu16BaseAddress << 16) |
-									   (pau8Buffer [ADDRESS_START_INDEX] << 8)  |
-									   (pau8Buffer [ADDRESS_START_INDEX + 1]));
+    if ((uint8)(~u32Sum + 1) == pau8Buffer [u32DataByteCount + DATA_START_INDEX])
+    {
+        /* Checksum is ok --> check the code */
+        if (pau8Buffer [CODE_INDEX] == DATA)
+        {
+            u32StartAddress = (uint32) ((scu16BaseAddress << 16) |
+                                       (pau8Buffer [ADDRESS_START_INDEX] << 8)  |
+                                       (pau8Buffer [ADDRESS_START_INDEX + 1]));
 
-			FlashProgram (u32StartAddress, pau8Buffer + DATA_START_INDEX, u32DataByteCount);
-		}
-		else if (pau8Buffer [CODE_INDEX] == EXTENDED_LINEAR_ADDRESS)
-		{
-			scu16BaseAddress = (uint16) ((pau8Buffer [DATA_START_INDEX] << 8) | pau8Buffer [DATA_START_INDEX + 1]);
-		}
-		else if ((pau8Buffer [CODE_INDEX] == EOF) && !(FLCTL_IFG & 0x86))
-		{
-			/* End of data and no errors --> clean up and jump to startup code */
-			ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
-			ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
-			P1REN = 0;
-			P1DIR = 0;
-			P1OUT = 0;
-			JumpToAppStartup ();
-		}
-	}
-	else
-	{
-		/* Bad Checksum */
-		UCA0TXBUF = 'C';
-		GoToErrorState ();
-	}
+            FlashProgram (u32StartAddress, pau8Buffer + DATA_START_INDEX, u32DataByteCount);
+        }
+        else if (pau8Buffer [CODE_INDEX] == EXTENDED_LINEAR_ADDRESS)
+        {
+            scu16BaseAddress = (uint16) ((pau8Buffer [DATA_START_INDEX] << 8) | pau8Buffer [DATA_START_INDEX + 1]);
+        }
+        else if ((pau8Buffer [CODE_INDEX] == EOF) && !(FLCTL_IFG & 0x86))
+        {
+            /* End of data and no errors --> clean up and jump to startup code */
+            ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
+            ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
+            P1REN = 0;
+            P1DIR = 0;
+            P1OUT = 0;
+            JumpToAppStartup ();
+        }
+    }
+    else
+    {
+        /* Bad Checksum */
+        UCA0TXBUF = 'C';
+        GoToErrorState ();
+    }
 }
 
 /**************************************************************************
@@ -319,7 +329,7 @@ __attribute__((section(".bootloader"))) static void FlashProgram (uint32 const k
 {
     uint8 * pu8Destination = (uint8 *) ku32StartAddress;
 
-	while (u8NumberOfBytes > 3)
+    while (u8NumberOfBytes > 3)
     {
         * (uint32 *) pu8Destination = * (uint32 *) pkau8Data;
         u8NumberOfBytes -= 4;
@@ -336,7 +346,7 @@ __attribute__((section(".bootloader"))) static void FlashProgram (uint32 const k
     /* Check for errors */
     if (FLCTL_IFG & (FLCTL_IFG_PRG_ERR | FLCTL_IFG_AVPST | FLCTL_IFG_AVPRE))
     {
-		UCA0TXBUF = 'F';
+        UCA0TXBUF = 'F';
         GoToErrorState ();
     }
 }

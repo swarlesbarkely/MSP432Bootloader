@@ -28,13 +28,13 @@ TARGET(elf32-littlearm)
                 0x0000000000000000      0x144 obj/Interrupts.o
                 0x0000000000000000                akpfnInterruptVector
 
-.bootloader     0x0000000000000144      0x390
+.bootloader     0x0000000000000144      0x398
                 0x0000000000000144                BOOTLOADER_START_ADDRESS = ABSOLUTE (.)
                 0x0000000000000145                BOOTLOADER_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
  *(.bootloader)
- .bootloader    0x0000000000000144      0x390 obj/bootloader.o
+ .bootloader    0x0000000000000144      0x398 obj/bootloader.o
                 0x0000000000000144                main
-                0x00000000000004d4                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
+                0x00000000000004dc                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
 
 .startup_code   0x0000000000001000        0x0
                 0x0000000000001000                STARTUP_CODE_START_ADDRESS = ABSOLUTE (.)
