@@ -1,4 +1,4 @@
-# MSP432Bootloader
+# MSP432 Bootloader
 Simple bootloader for the MSP432. The bootloader is able to program Intel hex files sent over UART. It has been tested on an MSP432 launchpad.
 ## Necessary Tools (on Linux)
 * ARM GCC compiler (arm-none-eabi-gcc)
