@@ -13,7 +13,7 @@ Simple bootloader for the MSP432. The bootloader is able to program Intel hex fi
   * One stop bit
   * Ensure each line is terminated with a CR-LF
 * Flash the bootloader. For launchpads, this is easiest using Code Composer Studio. You will have to manually configure CCS to program Bootloader.out (more to come on this).
-* To flash a new hex file, simply pull down P1.1 on power up. On the launchpad, this is done by holding button 1. The bootloader will send a `>` over UART channel 1 (USB connector on launchpad) if all is well. After that, simply send the hex file using your serial program or run `python Program.py` from the same directory as your hex file.
+* To flash a new hex file, simply pull down P1.1 on power up. On the launchpad, this is done by holding button 1. The bootloader will send a `>` over UART channel 1 (USB connector on launchpad) if all is well. After that, simply send the hex file using your serial program or run `python Program.py` (which you will have to configure to use your specific serial port) from the same directory as your hex file.
 * DO NOT hold down button 2 (P1.4) -- this will (hopefully) erase the bootloader and is totally untested
 
 ## Troubleshooting

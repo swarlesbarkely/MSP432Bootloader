@@ -115,7 +115,7 @@ $(document).ready(function(){initNavTree('index.html','');});
 </ul>
 </li>
 <li>Flash the bootloader. For launchpads, this is easiest using Code Composer Studio. You will have to manually configure CCS to program Bootloader.out (more to come on this).</li>
-<li>To flash a new hex file, simply pull down P1.1 on power up. On the launchpad, this is done by holding button 1. The bootloader will send a <code>&gt;</code> over UART channel 1 (USB connector on launchpad) if all is well. After that, simply send the hex file using your serial program or run <code>python Program.py</code> from the same directory as your hex file.</li>
+<li>To flash a new hex file, simply pull down P1.1 on power up. On the launchpad, this is done by holding button 1. The bootloader will send a <code>&gt;</code> over UART channel 1 (USB connector on launchpad) if all is well. After that, simply send the hex file using your serial program or run <code>python Program.py</code> (which you will have to configure to use your specific serial port) from the same directory as your hex file.</li>
 <li>DO NOT hold down button 2 (P1.4) &ndash; this will (hopefully) erase the bootloader and is totally untested</li>
 </ul>
 <h2>Troubleshooting</h2>
@@ -135,7 +135,7 @@ $(document).ready(function(){initNavTree('index.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Thu Jul 21 2016 19:18:52 for MSP432 Bootloader by
+    <li class="footer">Generated on Sun Jul 24 2016 10:32:11 for MSP432 Bootloader by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>
