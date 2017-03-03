@@ -2,13 +2,22 @@ var NAVTREE =
 [
   [ "MSP432 Bootloader", "index.html", [
     [ "Changelog", "md_changelog.html", null ],
-    [ "Resources", "md_resources.html", null ]
+    [ "Resources", "md_resources.html", null ],
+    [ "Todo List", "todo.html", null ],
+    [ "Files", null, [
+      [ "File List", "files.html", "files" ],
+      [ "File Members", "globals.html", [
+        [ "All", "globals.html", null ],
+        [ "Functions", "globals_func.html", null ],
+        [ "Macros", "globals_defs.html", null ]
+      ] ]
+    ] ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"index.html"
+"bootloader_8c.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

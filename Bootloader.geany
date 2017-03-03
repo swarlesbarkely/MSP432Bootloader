@@ -28,12 +28,13 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=3
+current_page=0
 FILE_NAME_0=10387;C;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fbootloader.c;0;4
-FILE_NAME_1=433;C;0;EUTF-8;0;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
-FILE_NAME_2=1044;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FMSP432.ld;0;4
-FILE_NAME_3=768;Make;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fmakefile;0;4
-FILE_NAME_4=1517;Python;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FPhoneCharger%2FProgram.py;0;4
+FILE_NAME_1=283;C;0;EUTF-8;0;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FInterrupts.c;0;4
+FILE_NAME_2=360;None;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2FMSP432.ld;0;4
+FILE_NAME_3=2123;Make;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FBootloader%2Fmakefile;0;4
+FILE_NAME_4=452;Python;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FPhoneCharger%2FProgram.py;0;4
+FILE_NAME_5=2323;Make;0;EUTF-8;1;1;0;%2Fhome%2Fzackday%2Fti%2FMSP432%2FPhoneCharger%2Fmakefile;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;*.s;

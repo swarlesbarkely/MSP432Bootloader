@@ -36,11 +36,14 @@ SECTIONS
 
 	/* Place bootloader next */
     .bootloader
-    ALIGN (4) :
+    INTERRUPT_VECTOR_SIZE :
     {
-        BOOTLOADER_START_ADDRESS = ABSOLUTE (.);    /* For defining boundary of bootloader */
-        BOOTLOADER_JUMP_ADDRESS = ABSOLUTE (.) | 1; /* For jumping to bootloader (address of "main") */
         *(.bootloader)
+
+        /* Some of the bootloader may need to get moved to RAM */
+        SRAM_CODE_LOAD_ADDRESS = ABSOLUTE (.);
+        . += SIZEOF (.sram_code);
+
         BOOTLOADER_END_ADDRESS = ABSOLUTE (.);
     }
 
@@ -48,25 +51,10 @@ SECTIONS
     .startup_code
     4k :
     {
-        STARTUP_CODE_START_ADDRESS = ABSOLUTE (.);      /* For defining boundary of startup section */
         STARTUP_CODE_JUMP_ADDRESS = ABSOLUTE (.) | 1;   /* For jumping to startup section */
-        *(.startup_code)
-        STARTUP_CODE_END_ADDRESS = ABSOLUTE (.);
     }
 
-    /* Now normal code */
-    .text
-    ALIGN (2) :
-    {
-        *(.text)
-        *(.text*)
-        *(.rodata)
-        *(.rodata*)
-        SRAM_CODE_LOAD_ADDRESS = ABSOLUTE (.);
-        . += SIZEOF (.sram_code);
-        SRAM_DATA_LOAD_ADDRESS = ABSOLUTE (.);
-    }
-
+    /* Give bootloader a place in RAM to copy itself to */
     .sram_code : AT (SRAM_CODE_LOAD_ADDRESS)
     {
         SRAM_CODE_START = ABSOLUTE(.);
