@@ -6,7 +6,7 @@ import sys
 # 9600 baud, no parity, 1 stop bit, 5 sec timeout
 try:
     print "Opening serial port at /dev/ttyACM0..."
-    Serial = serial.Serial ('/dev/ttyACM0', timeout = 5)
+    Serial = serial.Serial ('/dev/ttyACM0', 19200, timeout = 5)
 
 except:
     print "Could not open serial port!"

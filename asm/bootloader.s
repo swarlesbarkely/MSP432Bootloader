@@ -320,8 +320,8 @@ ProgrammingLoop:
 	ldrh	r3, [r2]
 	ldr	r1, [r0, #44]
 	uxth	r3, r3
-	orr	r3, r3, #33
-	movs	r6, #78
+	orr	r3, r3, #17
+	movs	r6, #39
 	strh	r3, [r2]	@ movhi
 	movs	r0, #12
 	strh	r6, [r5, #6]	@ movhi

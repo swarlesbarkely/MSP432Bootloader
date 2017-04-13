@@ -148,9 +148,9 @@ __attribute__((section(".sram_code"), noreturn)) void ProgrammingLoop (void)
     P1SEL0 |= BIT(2) | BIT(3);  /* Setup Rx and Tx pin functions */
     /* Baud rate setup from manual for given frequency -- this baud rate / frequency
      * was chosen because it has very low error probability */
-    /* Baud rate = 9600 */
-    UCA0MCTLW |= UCOS16 | (2 << UCBRF_OFS);
-    UCA0BRW = 78;
+    /* Baud rate = 19200 */
+    UCA0MCTLW |= UCOS16 | (1 << UCBRF_OFS);
+    UCA0BRW = 39;
 
     /* Setup Flash programming */
     ROM_FlashCtl_setProgramVerification (FLASH_REGPRE | FLASH_REGPOST); /* Pre and Post verification */
