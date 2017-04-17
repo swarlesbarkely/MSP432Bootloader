@@ -22,10 +22,10 @@ END GROUP
 TARGET(elf32-littlearm)
 
 .interupt_vectors
-                0x0000000000000000      0x144
+                0x0000000000000000        0x8
  *(.interrupt_vectors)
  .interupt_vectors
-                0x0000000000000000      0x144 obj/Interrupts.o
+                0x0000000000000000        0x8 obj/Interrupts.o
                 0x0000000000000000                akpfnInterruptVector
 
 .bootloader     0x0000000000000144       0x9c
@@ -36,50 +36,50 @@ TARGET(elf32-littlearm)
  .bootloader.__stub
                 0x00000000000001d8        0x8 linker stubs
                 0x00000000000001e0                SRAM_CODE_LOAD_ADDRESS = ABSOLUTE (.)
-                0x00000000000004e4                . = (. + SIZEOF (.sram_code))
-                0x00000000000004e4                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
+                0x000000000000071c                . = (. + SIZEOF (.sram_code))
+                0x000000000000071c                BOOTLOADER_END_ADDRESS = ABSOLUTE (.)
 
 .startup_code   0x0000000000001000        0x0
                 0x0000000000001001                STARTUP_CODE_JUMP_ADDRESS = (ABSOLUTE (.) | 0x1)
 
-.sram_code      0x0000000001000000      0x304 load address 0x00000000000001e0
+.sram_code      0x0000000001000000      0x53c load address 0x00000000000001e0
                 0x0000000001000000                SRAM_CODE_START = ABSOLUTE (.)
  *(.sram_code)
- .sram_code     0x0000000001000000      0x304 obj/bootloader.o
+ .sram_code     0x0000000001000000      0x53c obj/bootloader.o
                 0x0000000001000000                AsciiToHex
                 0x0000000001000020                FlashProgram
-                0x00000000010000a0                ProcessBuffer
-                0x00000000010001cc                ProgrammingLoop
-                0x0000000001000304                SRAM_CODE_END = ABSOLUTE (.)
+                0x00000000010002f8                ProcessBuffer
+                0x000000000100035c                ProgrammingLoop
+                0x000000000100053c                SRAM_CODE_END = ABSOLUTE (.)
 
-.glue_7         0x0000000001000304        0x0 load address 0x00000000000004e4
- .glue_7        0x0000000001000304        0x0 linker stubs
+.glue_7         0x000000000100053c        0x0 load address 0x000000000000071c
+ .glue_7        0x000000000100053c        0x0 linker stubs
 
-.glue_7t        0x0000000001000304        0x0 load address 0x00000000000004e4
- .glue_7t       0x0000000001000304        0x0 linker stubs
+.glue_7t        0x000000000100053c        0x0 load address 0x000000000000071c
+ .glue_7t       0x000000000100053c        0x0 linker stubs
 
-.vfp11_veneer   0x0000000001000304        0x0 load address 0x00000000000004e4
- .vfp11_veneer  0x0000000001000304        0x0 linker stubs
+.vfp11_veneer   0x000000000100053c        0x0 load address 0x000000000000071c
+ .vfp11_veneer  0x000000000100053c        0x0 linker stubs
 
-.v4_bx          0x0000000001000304        0x0 load address 0x00000000000004e4
- .v4_bx         0x0000000001000304        0x0 linker stubs
+.v4_bx          0x000000000100053c        0x0 load address 0x000000000000071c
+ .v4_bx         0x000000000100053c        0x0 linker stubs
 
-.text           0x0000000001000304        0x0 load address 0x00000000000004e4
- .text          0x0000000001000304        0x0 obj/bootloader.o
- .text          0x0000000001000304        0x0 obj/Interrupts.o
+.text           0x000000000100053c        0x0 load address 0x000000000000071c
+ .text          0x000000000100053c        0x0 obj/bootloader.o
+ .text          0x000000000100053c        0x0 obj/Interrupts.o
 
-.iplt           0x0000000001000304        0x0 load address 0x00000000000004e4
- .iplt          0x0000000001000304        0x0 obj/bootloader.o
+.iplt           0x000000000100053c        0x0 load address 0x000000000000071c
+ .iplt          0x000000000100053c        0x0 obj/bootloader.o
 
-.rel.dyn        0x0000000001000304        0x0 load address 0x00000000000004e4
- .rel.iplt      0x0000000001000304        0x0 obj/bootloader.o
+.rel.dyn        0x000000000100053c        0x0 load address 0x000000000000071c
+ .rel.iplt      0x000000000100053c        0x0 obj/bootloader.o
 
-.data           0x0000000001000304        0x0 load address 0x00000000000004e4
- .data          0x0000000001000304        0x0 obj/bootloader.o
- .data          0x0000000001000304        0x0 obj/Interrupts.o
+.data           0x000000000100053c        0x0 load address 0x000000000000071c
+ .data          0x000000000100053c        0x0 obj/bootloader.o
+ .data          0x000000000100053c        0x0 obj/Interrupts.o
 
-.igot.plt       0x0000000001000304        0x0 load address 0x00000000000004e4
- .igot.plt      0x0000000001000304        0x0 obj/bootloader.o
+.igot.plt       0x000000000100053c        0x0 load address 0x000000000000071c
+ .igot.plt      0x000000000100053c        0x0 obj/bootloader.o
 
 .stack          0x0000000020000000      0x7ff
                 0x0000000020000000                STACK_END = ABSOLUTE (.)

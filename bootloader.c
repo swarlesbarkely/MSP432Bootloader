@@ -28,13 +28,14 @@
 #define PROGRAM_PIN_MASK            (!(P1IN & LAUNCHPAD_BUTTON_1))      /**< Pressing the button pulls the input low */
 #define ERASE_BOOTLOADER_PIN_MASK   (!(P1IN & LAUNCHPAD_BOTH_BUTTONS))  /**< Pressing the button pulls the input low */
 
-#define BUFFER_SIZE             77          /**< Characters --> 64 data + 11 non-data + CR-LF */
-#define DATA_BYTE_COUNT_INDEX   1           /**< : */
-#define ADDRESS_START_INDEX     2           /**< : + Count */
-#define CODE_INDEX              4           /**< : + Count + 2 Address */
-#define DATA_START_INDEX        5           /**< : + Count + 2 Address + Code */
+#define PROGRAM_BUFFER_SIZE     64U
+#define DATA_BYTE_COUNT_INDEX   0
+#define ADDRESS_START_INDEX     1           /**< Count */
+#define CODE_INDEX              3           /**< Count + 2 Address */
+#define DATA_START_INDEX        4           /**< Count + 2 Address + Code */
 
-#define LINE_FEED   0x0A
+#define LINE_FEED           0x0A
+#define CARRIAGE_RETURN     '\r'
 
 /**< Hex record types */
 enum
@@ -58,7 +59,7 @@ static uint16_t scu16BaseAddress;
 
 /* These are global to make them show up in the map file */
 uint8_t AsciiToHex (uint8_t const ku8Char);
-void ProcessBuffer (uint8_t * pau8Buffer, uint8_t const ku8NumberOfBytes);
+void ProcessBuffer (uint8_t const * pkau8Buffer, uint8_t const ku8NumberOfBytes);
 void FlashProgram (uint32_t const ku32StartAddress, uint8_t const * pkau8Data, uint8_t u8NumberOfBytes);
 inline void JumpToAppStartup (void);
 inline void GoToErrorState (void);
@@ -96,9 +97,7 @@ __attribute__((section(".bootloader"))) int main (void)
         /* Set up code in RAM */
         while (pu32SRAMLocation < (uint32_t *) &SRAM_CODE_END)
         {
-            * pu32SRAMLocation = * pku32FlashLocation;
-            ++pu32SRAMLocation;
-            ++pku32FlashLocation;
+            * pu32SRAMLocation++ = * pku32FlashLocation++;
         }
 
         /* Note: we will not come back from here */
@@ -121,7 +120,10 @@ __attribute__((section(".bootloader"))) int main (void)
 __attribute__((section(".sram_code"), noreturn)) void ProgrammingLoop (void)
 {
     uint8_t u8BufferIndex = 0;
-    uint8_t au8SerialBuffer [BUFFER_SIZE];
+    uint8_t au8ProgramBuffer [PROGRAM_BUFFER_SIZE];
+    uint8_t u8RxTemp;
+    uint8_t u8UpperNibble;
+    bool fUpperNibble = true;
 
     if (ERASE_BOOTLOADER_PIN_MASK)
     {
@@ -154,7 +156,6 @@ __attribute__((section(".sram_code"), noreturn)) void ProgrammingLoop (void)
 
     /* Setup Flash programming */
     ROM_FlashCtl_setProgramVerification (FLASH_REGPRE | FLASH_REGPOST); /* Pre and Post verification */
-    ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
 
     /* Send something to show we're listening */
     UCA0TXBUF = '>';
@@ -166,12 +167,38 @@ __attribute__((section(".sram_code"), noreturn)) void ProgrammingLoop (void)
         if (UCA0IFG & UCRXIFG)
         {
             /* We received a character */
-            au8SerialBuffer [u8BufferIndex++] = UCA0RXBUF;
+            u8RxTemp = UCA0RXBUF;
 
-            /* See if buffer is full or line is ending */
-            if (UCA0RXBUF == LINE_FEED)
+            if ((u8RxTemp != CARRIAGE_RETURN) &&
+                (u8RxTemp != LINE_FEED) &&
+                (u8RxTemp != ':'))
             {
-                ProcessBuffer (au8SerialBuffer, u8BufferIndex - 2); // Strip off CR-LF
+                if (fUpperNibble)
+                {
+                    u8UpperNibble = AsciiToHex (u8RxTemp);
+                    fUpperNibble = false;
+                }
+                else
+                {
+                    au8ProgramBuffer [u8BufferIndex++] = AsciiToHex (u8RxTemp) |
+                                                        (u8UpperNibble << 4);
+
+                    fUpperNibble = true;
+
+                    /* Check for buffer overflow */
+                    if (u8BufferIndex > PROGRAM_BUFFER_SIZE)
+                    {
+                        /* Something seems fishy --> this is more data than we expect */
+                        UCA0TXBUF = 'B';
+                        GoToErrorState ();
+                    }
+                }
+            }
+
+            /* Check for end of line */
+            else if (u8RxTemp == LINE_FEED)
+            {
+                ProcessBuffer (au8ProgramBuffer, u8BufferIndex);
 
                 #ifdef _USE_PYTHON_PROGRAMMING_TOOL
                 /* Send something to show we processed the line */
@@ -183,12 +210,6 @@ __attribute__((section(".sram_code"), noreturn)) void ProgrammingLoop (void)
                 u8BufferIndex = 0;
 
                 P1OUT ^= 1;
-            }
-            else if (u8BufferIndex > BUFFER_SIZE)
-            {
-                /* Something seems fishy --> this is more data than we expect */
-                UCA0TXBUF = 'B';
-                GoToErrorState ();
             }
 
             UCA0IFG = 0;
@@ -220,67 +241,62 @@ __attribute__((section(".sram_code"), always_inline)) inline uint8_t AsciiToHex 
 }
 
 /**********************************************************************//**
- * \brief Processes input buffer from UART
+ * \brief Processes program buffer
  *
- * \param pau8Buffer -- Pointer to buffer
- *               ku8NumberOfBytes -- How many bytes to process
+ * \param pkau8Buffer -- Pointer to buffer
+ * \param ku8NumberOfBytes -- How many bytes to process
  *
  * \return None
  **************************************************************************/
-__attribute__((section(".sram_code"))) void ProcessBuffer (uint8_t * pau8Buffer,
+__attribute__((section(".sram_code"))) void ProcessBuffer (uint8_t const * pkau8Buffer,
                                                            uint8_t const ku8NumberOfBytes)
 {
-    uint32_t u32DataByteCount;
     uint32_t u32Index;
     uint32_t u32Sum = 0;
     uint32_t u32StartAddress;
 
-    /* Convert ASCII values to hex values */
-    for (u32Index = 2; u32Index <= ku8NumberOfBytes; u32Index += 2)
-    {
-        pau8Buffer[u32Index >> 1] = (AsciiToHex (pau8Buffer[u32Index - 1]) << 4) |
-                                     AsciiToHex (pau8Buffer[u32Index]);
-    }
-
-    u32DataByteCount = pau8Buffer [DATA_BYTE_COUNT_INDEX];
-
     /* Check the checksum */
-    for (u32Index = 1; u32Index < (u32DataByteCount + DATA_START_INDEX); ++u32Index)
+    if (ku8NumberOfBytes > 0)
     {
-        u32Sum += pau8Buffer [u32Index];
-    }
+        for (u32Index = 0; u32Index < (ku8NumberOfBytes - 1); ++u32Index)
+        {
+            u32Sum += pkau8Buffer [u32Index];
+        }
 
-    if ((uint8_t)(~u32Sum + 1) == pau8Buffer [u32DataByteCount + DATA_START_INDEX])
-    {
-        /* Checksum is ok --> check the code */
-        if (pau8Buffer [CODE_INDEX] == DATA)
+        if ((uint8_t)(~u32Sum + 1) == pkau8Buffer [ku8NumberOfBytes - 1])
         {
-            u32StartAddress = (uint32_t) ((scu16BaseAddress << 16) |
-                                       (pau8Buffer [ADDRESS_START_INDEX] << 8)  |
-                                       (pau8Buffer [ADDRESS_START_INDEX + 1]));
+            /* Checksum is ok --> check the code */
+            if (pkau8Buffer [CODE_INDEX] == DATA)
+            {
+                u32StartAddress = (uint32_t) ((scu16BaseAddress << 16) |
+                                           (pkau8Buffer [ADDRESS_START_INDEX] << 8)  |
+                                           (pkau8Buffer [ADDRESS_START_INDEX + 1]));
 
-            FlashProgram (u32StartAddress, pau8Buffer + DATA_START_INDEX, u32DataByteCount);
+                FlashProgram (u32StartAddress,
+                              pkau8Buffer + DATA_START_INDEX,
+                              pkau8Buffer [DATA_BYTE_COUNT_INDEX]);
+            }
+            else if (pkau8Buffer [CODE_INDEX] == EXTENDED_LINEAR_ADDRESS)
+            {
+                scu16BaseAddress = (uint16_t) ((pkau8Buffer [DATA_START_INDEX] << 8) | pkau8Buffer [DATA_START_INDEX + 1]);
+            }
+            else if ((pkau8Buffer [CODE_INDEX] == EOF) && !(FLCTL_IFG & 0x86))
+            {
+                /* End of data and no errors --> clean up and jump to startup code */
+                ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
+                ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
+                P1REN = 0;
+                P1DIR = 0;
+                P1OUT = 0;
+                JumpToAppStartup ();
+            }
         }
-        else if (pau8Buffer [CODE_INDEX] == EXTENDED_LINEAR_ADDRESS)
+        else
         {
-            scu16BaseAddress = (uint16_t) ((pau8Buffer [DATA_START_INDEX] << 8) | pau8Buffer [DATA_START_INDEX + 1]);
+            /* Bad Checksum */
+            UCA0TXBUF = 'C';
+            GoToErrorState ();
         }
-        else if ((pau8Buffer [CODE_INDEX] == EOF) && !(FLCTL_IFG & 0x86))
-        {
-            /* End of data and no errors --> clean up and jump to startup code */
-            ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK0, 0xFFFFFFFF);
-            ROM_FlashCtl_protectSector (FLASH_MAIN_MEMORY_SPACE_BANK1, 0xFFFFFFFF);
-            P1REN = 0;
-            P1DIR = 0;
-            P1OUT = 0;
-            JumpToAppStartup ();
-        }
-    }
-    else
-    {
-        /* Bad Checksum */
-        UCA0TXBUF = 'C';
-        GoToErrorState ();
     }
 }
 
@@ -298,6 +314,20 @@ __attribute__((section(".sram_code"))) void FlashProgram (uint32_t const ku32Sta
                                                           uint8_t u8NumberOfBytes)
 {
     uint8_t * pu8Destination = (uint8_t *) ku32StartAddress;
+    uint16_t u8BitBoundaryCounter = 0;
+
+    /* Get to 128-bit (16-byte) boundary */
+    if (ku32StartAddress & 0xF)
+    {
+        ROM_FlashCtl_enableWordProgramming (FLASH_IMMEDIATE_WRITE_MODE);
+        while ((uintptr_t) pu8Destination & 0xF)
+        {
+            * pu8Destination++ = * pkau8Data++;
+            --u8NumberOfBytes;
+        }
+    }
+
+    ROM_FlashCtl_enableWordProgramming (FLASH_COLLATED_WRITE_MODE);
 
     while (u8NumberOfBytes > 3)
     {
@@ -305,13 +335,41 @@ __attribute__((section(".sram_code"))) void FlashProgram (uint32_t const ku32Sta
         u8NumberOfBytes -= 4;
         pu8Destination += 4;
         pkau8Data += 4;
+        u8BitBoundaryCounter += 4;
+
+        if (u8BitBoundaryCounter == 16)
+        {
+            /* We hit a 128-bit boundary -- wait for program to finish */
+            while (!(FLCTL_IFG & FLCTL_IFG_PRG));
+            FLCTL_CLRIFG = FLCTL_IFG_PRG;
+            u8BitBoundaryCounter = 0;
+        }
     }
 
     while (u8NumberOfBytes)
     {
         * pu8Destination++ = * pkau8Data++;
         --u8NumberOfBytes;
+        ++u8BitBoundaryCounter;
+
+        if (u8BitBoundaryCounter == 16)
+        {
+            /* We hit a 128-bit boundary -- wait for program to finish */
+            while (!(FLCTL_IFG & FLCTL_IFG_PRG));
+            FLCTL_CLRIFG = FLCTL_IFG_PRG;
+            u8BitBoundaryCounter = 0;
+        }
     }
+
+    /* Make sure we program 128 bits */
+    while (u8BitBoundaryCounter < 16)
+    {
+        * pu8Destination++ = 0xFF;
+        ++u8BitBoundaryCounter;
+    }
+
+    /* Wait until operation complete */
+    while (!(FLCTL_IFG & FLCTL_IFG_PRG));
 
     /* Check for errors */
     if (FLCTL_IFG & (FLCTL_IFG_PRG_ERR | FLCTL_IFG_AVPST | FLCTL_IFG_AVPRE))
@@ -319,6 +377,9 @@ __attribute__((section(".sram_code"))) void FlashProgram (uint32_t const ku32Sta
         UCA0TXBUF = 'F';
         GoToErrorState ();
     }
+
+    /* Clear flags */
+    FLCTL_CLRIFG = 0xFFFF;
 }
 
 /**********************************************************************//**

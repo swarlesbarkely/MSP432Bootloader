@@ -10,23 +10,24 @@ SYMBOL TABLE:
 00000000 l    d  .ARM.attributes	00000000 .ARM.attributes
 00000000 l    d  .interupt_vectors	00000000 .interupt_vectors
 00000000 l    df *ABS*	00000000 bootloader.c
+0100026c l     F .sram_code	0000008c ProcessBuffer.part.0
 20000800 l     O .bss	00000002 scu16BaseAddress
 00000000 l    df *ABS*	00000000 Interrupts.c
 000001d8 l     F .bootloader	00000008 __ProgrammingLoop_veneer
-01000304 g       *ABS*	00000000 SRAM_CODE_END
+0100053c g       *ABS*	00000000 SRAM_CODE_END
 000001e0 g       *ABS*	00000000 SRAM_CODE_LOAD_ADDRESS
 00000800 g       *ABS*	00000000 STACK_SIZE
 20000800 g       *ABS*	00000000 ZERO_INIT_BEGIN
-010000a0 g     F .sram_code	0000012c ProcessBuffer
-00000000 g     O .interupt_vectors	00000144 akpfnInterruptVector
+010002f8 g     F .sram_code	00000064 ProcessBuffer
+00000000 g     O .interupt_vectors	00000008 akpfnInterruptVector
 00000ebc g       *ABS*	00000000 BOOTLOADER_SIZE
-01000020 g     F .sram_code	00000080 FlashProgram
+01000020 g     F .sram_code	0000024c FlashProgram
 00000144 g     F .bootloader	00000088 main
 01000000 g       *ABS*	00000000 SRAM_CODE_START
 20000000 g       *ABS*	00000000 STACK_END
 01000000 g     F .sram_code	00000020 AsciiToHex
 00000144 g       *ABS*	00000000 INTERRUPT_VECTOR_SIZE
-010001cc g     F .sram_code	00000130 ProgrammingLoop
+0100035c g     F .sram_code	000001d8 ProgrammingLoop
 200007ff g       *ABS*	00000000 STACK_BEGIN
 00001001 g       *ABS*	00000000 STARTUP_CODE_JUMP_ADDRESS
 000001e0 g       *ABS*	00000000 BOOTLOADER_END_ADDRESS

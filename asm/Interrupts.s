@@ -15,9 +15,8 @@
 	.section	.interupt_vectors,"a",%progbits
 	.align	2
 	.type	akpfnInterruptVector, %object
-	.size	akpfnInterruptVector, 324
+	.size	akpfnInterruptVector, 8
 akpfnInterruptVector:
 	.word	STACK_BEGIN
 	.word	main+1
-	.space	316
 	.ident	"GCC: (GNU Tools for ARM Embedded Processors 6-2017-q1-update) 6.3.1 20170215 (release) [ARM/embedded-6-branch revision 245512]"

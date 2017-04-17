@@ -34,10 +34,10 @@ File.seek (0)
 LinesSent = 0
 Line = []
 
-print "Making sure controller is in programming mode..."
-if Serial.read () != '>' :
-    print "Controller not in programming mode!"
-    sys.exit()
+print "Waiting for controller to enter programming mode..."
+
+while Serial.read () != '>' :
+    pass
 
 print "Sending file..."
 
@@ -66,6 +66,7 @@ while Line != '' :
         sys.exit()
 
     elif Rx == 'F' :
+        print Line
         print "\nFlash error!"
         sys.exit()
 
