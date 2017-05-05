@@ -1,7 +1,6 @@
 var NAVTREE =
 [
   [ "MSP432 Bootloader", "index.html", [
-    [ "Changelog", "md_changelog.html", null ],
     [ "Resources", "md_resources.html", null ],
     [ "Todo List", "todo.html", null ],
     [ "Files", null, [

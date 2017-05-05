@@ -109,34 +109,39 @@ $(document).ready(function(){initNavTree('index.html','');});
 <li>Copy all files into a common directory</li>
 <li>Run <code>make</code> from said directory</li>
 <li>Set up your serial program using:<ul>
-<li>9600 baud</li>
+<li>19200 baud</li>
 <li>No parity</li>
 <li>One stop bit</li>
 <li>Ensure each line is terminated with a CR-LF</li>
 </ul>
 </li>
-<li>Flash the bootloader. For launchpads, this is easiest using Code Composer Studio. You will have to manually configure CCS to program Bootloader.out (more to come on this).</li>
+<li>Flash the bootloader. For launchpads, this is easiest using Code Composer Studio. You will have to manually configure CCS to program Bootloader.out:<ul>
+<li>Right click on the project</li>
+<li>Go to Debug As... -&gt; Debug Configurations</li>
+<li>Go to the Program tab and set the Program field to Bootloader.out</li>
+<li>Debug the project to program the bootloader</li>
+</ul>
+</li>
 <li>To flash a new hex file, simply pull down P1.1 on power up. On the launchpad, this is done by holding button 1. The bootloader will send a <code>&gt;</code> over UART channel 1 (USB connector on launchpad) if all is well. After that, simply send the hex file using your serial program or run <code>python Program.py</code> (which you will have to configure to use your specific serial port) from the same directory as your hex file.</li>
-<li>DO NOT hold down button 2 (P1.4) &ndash; this will (hopefully) erase the bootloader and is totally untested</li>
+<li>To reprogram the bootloader, hold down P1.1 and P1.4 (both buttons on the launchpad) and send the hex file. This will also erase the application.</li>
 </ul>
 <h2>Troubleshooting</h2>
 <p>If programming fails, the bootloader will send out a diagnostic character over UART and set P2.0 (Red part of RGB LED on Launchpad) high.</p>
 <ul>
-<li><code>B</code> &ndash; Buffer overflow. UART Rx buffer is 77 bytes wide. If we hit 77 and it's not LF (0x0A), we go to the error state.</li>
-<li><code>C</code> &ndash; Checksum error. Checksum sent with line being processed didn't match the calculated one. If you get this consistently, add a transmission delay (~80 ms) at the end of each line.</li>
+<li><code>B</code> &ndash; Buffer overflow. We can only hold 64 bytes of real data (2 address, 1 record type, 60 data, and 1 checksum).</li>
+<li><code>C</code> &ndash; Checksum error. Checksum sent with line being processed didn't match the calculated one.</li>
 <li><code>F</code> &ndash; Flash program error. Make sure you're not attempting to program the lower 4k of memory or any SRAM.</li>
 </ul>
 <h3>Todos</h3>
 <ul>
-<li>Add checks for valid app code</li>
-<li>Test reprogramming of bootloader </li>
+<li>Add checks for valid app code </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Feb 22 2017 20:33:08 for MSP432 Bootloader by
+    <li class="footer">Generated on Wed Apr 19 2017 23:33:54 for MSP432 Bootloader by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>
